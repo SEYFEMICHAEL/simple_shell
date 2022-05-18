@@ -2,5 +2,5 @@
 ALX project to write a simple UNIX command interpreter.
 
 ## Authors
- Seyfemichael Teklemariam <seyfemichael>
- Nebiyou Ababe <neb26>
+- Seyfemichael Teklemariam <seyfemichael>
+- Nebiyou Ababe <neb26>
