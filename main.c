@@ -1,51 +1,49 @@
-#include "main.h"
-
+#include "shell.h"
 /**
- * main - Main function
- * @argc: Number of arguments
- * @argv: List of arguments
- * @envp: List of enviroments
- * Return: 0
+ * main - Entry point for the simple shell project created
+ * for ALX sprint one final Project.
+ * Return: 0 on success
  */
-int main(int argc, char **argv, char *envp[])
+int main(void)
 {
-	vars_t vars = {NULL, NULL};
-	size_t len_buffer = 0;
-	int i;
+	ssize_t bytes_rd = 0; /** Bytes read from a getline*/
+	size_t bf_size = 0; /**Buffer size*/
+	char *entry = NULL, *arguments[20]; /**String of args that enters the usr*/
+	int counter = 1, vf_stat = 0, exist_stat = 0, exit_stat = 0, blt_stat = 0;
 
-	(void)argc;
-	(void)argv;
-
-	_puts("$ ");
-
-	while ((getline(&(vars.buffer), &len_buffer, stdin)) != -1)
+	_mprint("$ ", 2);/**prompt mini-shell*/
+	bytes_rd = getline(&entry, &bf_size, stdin); /**sizeof entry, o -1 (EOF))*/
+	while (bytes_rd != -1)
 	{
-
-		if (!strcmp(vars.buffer, "env\n"))
+		if (*entry != '\n')
 		{
-			for (i = 0 ; envp[i] ; i++)
+			getcmd_inputs(entry, arguments);
+			if (arguments[0] != NULL)
 			{
-				_puts(envp[i]);
-				_putchar('\n');
+				exist_stat = check_file(arguments[0]);/*checks if the path entered exists*/
+				if (exist_stat != 0)/**Did not find the file*/
+				{
+					vf_stat = get_path(arguments);
+					if (vf_stat == 0)
+						exit_stat = execute(arguments), free(entry), free(*arguments);
+					else
+					{
+					blt_stat = getbuiltins(arguments, exit_stat);
+					if (blt_stat != 0)
+						exit_stat = p_error(arguments, counter), free(entry);
+					}
+				}
+				else /**Found the file*/
+					exit_stat = execute(arguments), free(entry);
 			}
+			else
+				free(entry);
 		}
-
-		vars.array_tokens = tokenizer(vars.buffer, " \n");
-		if (vars.array_tokens == NULL)
-		{
-			_puts("$ ");
-			continue;
-		}
-
-		if (check_for_builtins(&vars) == NULL)
-		{
-			_puts("No encontrado ");
-			_puts(vars.array_tokens[0]);
-			_putchar('\n');
-		}
-		free_shell(&vars);
-		_puts("$ ");
+		else if (*entry == '\n')
+			free(entry);
+		entry = NULL, counter++;
+		_mprint("$ ", 2), bytes_rd = getline(&entry, &bf_size, stdin);
 	}
-	_putchar('\n');
-	exit(0);
+	free_mem(entry);
+	return (exit_stat);
 }
